@@ -10,9 +10,10 @@ BIN=$(patsubst %.c,%,$(wildcard *.c))
 
 all:$(OBJS)
 #	$(CC) $(LDFLAGS) $< 
-	for i in $(BIN); \
+	for i in `echo $(BIN)|cut -d' ' -f 1-`;\
 	do\
-		$(CC) $(LDFLAGS) $< -o $$i;\
+		echo $$i;\
+		$(CC) $(LDFLAGS) $$i.o -o $$i;\
 	done
 
 %.o:%.c 

@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <gtk/gtk.h>
 
@@ -14,18 +12,19 @@
 								}while(0)
 static gboolean button_press (GtkWidget *, GdkEvent *);
 static void menuitem_response (gchar *);
-static void menuitem_response_1 (gchar *message, GtkWidget *);
+
 GtkWidget *window;
 
 int main( int   argc,
           char *argv[] )
 {
+
+
     GtkWidget *menu[2];
     GtkWidget *menu_bar;
     GtkWidget *menu_bar_2;
     GtkWidget *root_menu[2];
     GtkWidget *menu_items;
-    GtkWidget *menu_items_;
     GtkWidget *vbox;
     GtkWidget *button[4];
 	GSList *group = NULL;
@@ -69,26 +68,26 @@ int main( int   argc,
 			gtk_menu_shell_append (GTK_MENU_SHELL (menu[0]), menu_items);
 
 			/* Do something interesting when the menuitem is selected */
-			g_signal_connect_swapped (menu_items, "toggled",
-					G_CALLBACK (menuitem_response_1), 
+			g_signal_connect_swapped (menu_items, "activate",
+					G_CALLBACK (menuitem_response), 
 					(gpointer) g_strdup (buf));
-			
+
             /* Show the widget */
             gtk_widget_show (menu_items);
 
-		}
-	for(i = 0; i < 4; i++){
-			menu_items_ = gtk_menu_item_new_with_label (buf);
+			menu_items = gtk_menu_item_new_with_label (buf);
 			/* ...and add it to the menu. */
-			gtk_menu_shell_append (GTK_MENU_SHELL (menu[1]), menu_items_);
+			gtk_menu_shell_append (GTK_MENU_SHELL (menu[1]), menu_items);
 
 			/* Do something interesting when the menuitem is selected */
-			g_signal_connect_swapped (menu_items_, "activate",
+			g_signal_connect_swapped (menu_items, "activate",
 					G_CALLBACK (menuitem_response), 
 					(gpointer) g_strdup (buf));
+
             /* Show the widget */
-            gtk_widget_show (menu_items_);
-	}
+            gtk_widget_show (menu_items);
+
+        }
 
     /* This is the root menu, and will be the label
      * displayed on the menu bar.  There won't be a signal handler attached,
@@ -124,7 +123,7 @@ int main( int   argc,
 	for(i = 0; i <= 3; i++){
 		g_signal_connect_swapped (button[i], "event",
 				G_CALLBACK (button_press), 
-				menu[0]);
+				menu);
 		gtk_box_pack_start (GTK_BOX (vbox), button[i], TRUE, TRUE, 2);
 		gtk_box_reorder_child(GTK_BOX (vbox), button[i] , i + 1);
 		gtk_widget_show (button[i]);
@@ -136,15 +135,15 @@ int main( int   argc,
 	for(i = 0; i < 2; i++){
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu_bar), root_menu[i]);
 	}
-	//	gtk_menu_shell_append (GTK_MENU_SHELL (menu_bar_2), root_menu[1]);
-	gtk_widget_show (vbox);
-	/* always display the window as the last step so it all splashes on
-	 * the screen at once. */
-	gtk_widget_show (window);
+//	gtk_menu_shell_append (GTK_MENU_SHELL (menu_bar_2), root_menu[1]);
+    gtk_widget_show (vbox);
+    /* always display the window as the last step so it all splashes on
+     * the screen at once. */
+    gtk_widget_show (window);
 
-	gtk_main ();
+    gtk_main ();
 
-	return 0;
+    return 0;
 }
 
 /* Respond to a button-press by posting a menu passed in as widget.
@@ -154,53 +153,43 @@ int main( int   argc,
  */
 
 static gboolean button_press( GtkWidget *widget,
-		GdkEvent *event )
+                              GdkEvent *event )
 {
 
-	if (event->type == GDK_BUTTON_PRESS) {
-		GdkEventButton *bevent = (GdkEventButton *) event; 
-		gtk_menu_popup (GTK_MENU (widget), NULL, NULL, NULL, NULL,
-				bevent->button, bevent->time);
-		/* Tell calling code that we have handled this event; the buck
-		 * stops here. */
-		return TRUE;
-	}
+    if (event->type == GDK_BUTTON_PRESS) {
+        GdkEventButton *bevent = (GdkEventButton *) event; 
+        gtk_menu_popup (GTK_MENU (widget), NULL, NULL, NULL, NULL,
+                        bevent->button, bevent->time);
+        /* Tell calling code that we have handled this event; the buck
+         * stops here. */
+        return TRUE;
+    }
 
-	/* Tell calling code that we have not handled this event; pass it on. */
-	return FALSE;
+    /* Tell calling code that we have not handled this event; pass it on. */
+    return FALSE;
 }
 
 
 /* Print a string when a menu item is selected */
 
-static void menuitem_response(gchar *message)
+static void menuitem_response( gchar *message )
 {
-	GtkWidget *dialog, *label, *content_area;
-
-	printf("%s\n", __func__);
-	/* Create the widgets */
-	dialog = gtk_dialog_new_with_buttons ("Message",
-			GTK_WINDOW (window),
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_STOCK_OK,
-			GTK_RESPONSE_NONE,
-			NULL);
-	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	label = gtk_label_new (message);
-	/* Ensure that the dialog box is destroyed when the user responds. */
-	g_signal_connect_swapped (dialog,
-			"response",
-			G_CALLBACK (gtk_widget_destroy),
-			dialog);
-	/* Add the label, and show:w everything we've added to the dialog. */
-	gtk_container_add (GTK_CONTAINER (content_area), label);
-	gtk_widget_show_all (dialog);
-}
-
-static void menuitem_response_1(gchar *message, GtkWidget *widget)
-{
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM (widget))){
-		printf("%s\n", __func__);
-		menuitem_response(message);
-	}
+    GtkWidget *dialog, *label, *content_area;
+   /* Create the widgets */
+   dialog = gtk_dialog_new_with_buttons ("Message",
+                                         window,
+                                         GTK_DIALOG_DESTROY_WITH_PARENT,
+                                         GTK_STOCK_OK,
+                                         GTK_RESPONSE_NONE,
+                                         NULL);
+   content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+   label = gtk_label_new (message);
+   /* Ensure that the dialog box is destroyed when the user responds. */
+   g_signal_connect_swapped (dialog,
+                             "response",
+                             G_CALLBACK (gtk_widget_destroy),
+                             dialog);
+   /* Add the label, and show:w everything we've added to the dialog. */
+   gtk_container_add (GTK_CONTAINER (content_area), label);
+   gtk_widget_show_all (dialog);
 }
